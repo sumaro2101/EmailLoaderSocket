@@ -1,0 +1,38 @@
+{% load static %}
+<div class="container">
+  <div class="card p-3">
+    <div class="offset-1 col-10">
+
+      <h3 class="p-2">
+          Personal data user
+      </h3>
+      <div class="card bg-body-tertiary m-1 p-2" style="border-radius: 8px; box-shadow: 0 1px 2px 0 rgba(0,0,0,.16);">
+          <div class="card-body p-3 card_big_style">
+              <div class="my-3 card_big_images">
+                      {% if current_user.image %}
+                      <img src="{{ current_user.image.url }}" class="d-block w-auto card-style-image" alt="{{ current_user.username }}">
+                      {% else %}
+                      <img src="{% static 'images/image_not_found.jpeg' %}" class="d-block w-auto card-style-image" alt="{{ current_user.username }}">
+                      {% endif %}
+              </div>
+              <div style="grid-area: spec-brand">
+                <div class="d-flex justify-content-between">
+                  <div>
+                    <p style="line-height: .9375rem; font-size: .8125rem; font-weight: 700;">Login: <strong>{{ current_user.username }}</strong></p>
+                    <p style="font-size: .80rem; line-height: .6875rem;">Date registration: {{ current_user.date_joined }}</p>
+                  </div>
+                </div>
+              </div>
+      
+              {% if request.user == current_user or request.user.is_staff %}
+              <div class="d-flex flex-column" style="grid-area:stat;">
+                <div class="d-flex">
+                  <div style="font-size: .80rem; line-height: 1.250rem;">Email: {% if current_user.email %}{{ current_user.email }}{% else %} not found{% endif %}</div>
+                </div>
+                {% endif %}
+              </div>
+          </div>
+      </div>
+    </div>
+  </div>
+</div>

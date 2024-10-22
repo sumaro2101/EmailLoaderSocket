@@ -1,0 +1,31 @@
+{% load static %}
+
+<nav class="navbar navbar-expand-lg bg-body-tertiary sticky-top mb-5">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/">MailLoader</a>
+      <div class="position-absolute top-50 translate-middle" style="right: 0;">
+        {% if request.user.is_authenticated %}
+        <div class="btn-group" data-bs-theme="dark">
+          <button class="btn dropdown-toggle text-dark" href="#" role="button" data-bs-toggle="dropdown" id="dropdownMenuButtonDark" aria-expanded="false">
+            <div class="d-inline" style="height: 100%; width: 100%; align-self: center;">
+              {% if user.image %}
+              <img src="{{ user.image.url }}" style="border-radius: 100%; overflow: hidden; height: 24px; width: 24px;" alt="{{ user.username }}">
+              {% else %}
+              <img src="{% static 'images/image_not_found.jpeg' %}" class="me-2" style="border-radius: 100%; overflow: hidden; height: 24px; width: 24px;" alt="{{ user.username }}">
+              {% endif %}
+            </div>
+            {{ request.user.get_username }}
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end text-bg-secondary" aria-labelledby="dropdownMenuButtonDark">
+            <li><a class="dropdown-item" href="{% url 'users:user' request.user.username %}">Personal Account</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <form class="dropdown-item" action="{% url 'users:logout' %}" method="post">
+              {% csrf_token %}
+              <button class="dropdown-item" style="--bs-btn-padding-y: .25rem; --bs-btn-padding-x: .5rem; --bs-btn-font-size: .75rem;" type="submit">Logout</button>
+            </form>
+          </ul>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+</nav>

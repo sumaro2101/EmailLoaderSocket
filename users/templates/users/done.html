@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <div class="card p-3">
+      <div class="offset-1 col-10">
+        <h3 class="text-center">Registration</h3>
+        <div class="card m-2 p-2">
+            <div class="card-body text-center">
+                <p>Geristration is complite!</p>
+                <a href="{% url 'users:login' %}">Now you can enter in system</a>
+            </div>
+        </div>
+      </div>
+    </div>
+</div>
+{% endblock content %}

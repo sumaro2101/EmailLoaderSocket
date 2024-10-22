@@ -10,6 +10,10 @@ python = "^3.11"
 django = "^5.1.2"
 channels = "^4.1.0"
 redis = "^5.1.1"
+loguru = "^0.7.2"
+python-dotenv = "^1.0.1"
+psycopg2-binary = "^2.9.10"
+pillow = "^11.0.0"
 
 
 [build-system]
