@@ -1,3 +1,9 @@
-from django.shortcuts import render
+from django.views.generic import TemplateView
+from django.contrib.auth import mixins
 
-# Create your views here.
+
+class MainPageView(mixins.LoginRequiredMixin, TemplateView):
+    """
+    View основной страницы
+    """
+    template_name = 'mailscaner/main.html'
