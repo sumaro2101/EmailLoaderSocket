@@ -14,6 +14,13 @@ class User(AbstractUser):
                               help_text='Изображение пользователя',
                               )
 
+    emails = models.ManyToManyField("mailscaner.Email",
+                                   verbose_name='эмеилы',
+                                   help_text='Эмеилы '
+                                   'принадлежащие пользователю',
+                                   related_name='users',
+                                   )
+
     class Meta:
         db_table = 'user'
         verbose_name = 'пользователь'

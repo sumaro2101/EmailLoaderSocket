@@ -1,0 +1,16 @@
+{% load static %}
+<div class="container">
+    <a href="{% url 'mailscaner:main' %}">Back</a>
+    <h3 class="text-center">List Emails</h3>
+    <div class="card mt-2 p-2">
+        <ul>
+            {% for email in emails %}
+                <a href="">
+                    <li>
+                        {{ email.address }}
+                    </li>
+                </a>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
