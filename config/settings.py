@@ -150,6 +150,8 @@ PORT_MAIL = 993
 IMAP_YANDEX = 'imap.yandex.ru'
 PORT_YANDEX = 993
 
+EMAIL_READONLY = bool(int(find_env('EMAIL_READONLY')))
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
