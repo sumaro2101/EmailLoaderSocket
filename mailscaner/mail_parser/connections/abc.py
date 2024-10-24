@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from imaplib import IMAP4_SSL
 from django.forms import BaseForm
 
 from typing import Any, Literal
@@ -46,7 +47,7 @@ class AbstractConnection(ABC):
                    login: str,
                    password: str,
                    form: BaseForm | None = None,
-                   ) -> tuple[Literal['OK'], list[bytes]]:
+                   ) -> IMAP4_SSL:
         pass
 
     @abstractmethod

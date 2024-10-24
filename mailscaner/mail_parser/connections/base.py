@@ -1,4 +1,4 @@
-from imaplib import IMAP4
+from imaplib import IMAP4_SSL, IMAP4
 from typing import Any, Literal
 
 from django.conf import settings
@@ -32,8 +32,8 @@ class BaseConnection(AbstractConnection):
         self.mailbox = mailbox
         self.charset = charset
         self.criteria = criteria
-        self.server: IMAP4 = None
-        self.messages = None
+        self.server: IMAP4_SSL = None
+        self.messages = self.action()
 
     def _select_box(self,
                     box: str,
@@ -67,12 +67,24 @@ class BaseConnection(AbstractConnection):
                    login: str,
                    password: str,
                    form: BaseForm | None = None,
-                   ) -> IMAP4:
+                   ) -> IMAP4_SSL:
+        """
+        Соединение с сервером
+
+        Args:
+            login (str): Email или login
+            password (str): Пароль
+            form (BaseForm | None, optional): В случае проверки подлинности
+            Эмеила.
+
+        Returns:
+            IMAP4: IMAP сервер
+        """        
         imap = cls._get_imap()
         port = cls._get_port()
-        server = IMAP4(host=imap,
-                       port=port,
-                       )
+        server = IMAP4_SSL(host=imap,
+                           port=port,
+                           )
         try:
             server.login(login, password)
             return server
