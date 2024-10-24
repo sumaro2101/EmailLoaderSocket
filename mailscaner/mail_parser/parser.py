@@ -14,13 +14,21 @@ class ParserMessages:
     """
     from_end_to_start = True
     __RFC = settings.RFC822
+    __decode = settings.DECODER
 
     def __init__(self,
                  connection: 'GmailConnection' |
                  'YandexConnection' |
                  'MailConnection',
                  ) -> None:
-        self.messages = connection.messages
+        self.messages = connection
         self.server = connection.server
 
-    
+    def load_messages(self):
+        leng = len(self.messages) - 1
+        if self.from_end_to_start:
+            while leng != -1:
+                pass
+        else:
+            for index, message in enumerate(self.messages):
+                pass

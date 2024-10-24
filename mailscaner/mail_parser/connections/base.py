@@ -96,6 +96,22 @@ class BaseConnection(AbstractConnection):
     def __enter__(self) -> list[int]:
         return self.messages
 
+    def __getitem__(self, index):
+        return self.messages[index]
+
+    def __len__(self):
+        return len(self.messages)
+
+    def __reverse__(self):
+        for i in reversed(range(len(self.messages))):
+            yield self.messages[i]
+
+    def reverse(self):
+        sequence = self.messages
+        n = len(sequence)
+        for i in range(n//2):
+            sequence[i], sequence[n-i-1] = sequence[n-i-1], sequence[i]
+
     def action(self) -> list[int]:
         """
         Создание подключения с настройками
