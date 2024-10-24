@@ -1,0 +1,44 @@
+{{ email.pk|json_script:"email_id" }}
+<script>
+    $(document).ready(function() {
+        const pk = JSON.parse($('#email_id').text());
+        const socket = new WebSocket(
+            'ws://'
+            + window.location.host
+            + '/email/download/'
+            + pk
+            + '/'
+        );
+        console.log(socket.readyState);
+        socket.onopen = function(e) {
+            socket.send(JSON.stringify({
+                'id': pk
+            }));
+        };
+        socket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            if ('number' in data) {
+                var number = data.number;
+                var th = $('<th scope="row"></th>').text(number);
+                var tr = $('<tr></tr>').append(th).attr('id', number);
+                $('.table tbody').append(tr);
+            }
+            else {
+                var reverse_number = data.reverse_number;
+                var title = data.title;
+                var date_sending = data.date_sending;
+                var date_receipt = data.date_receipt;
+                var text = data.text;
+                var file = data.file;
+                var array_values = [title, date_sending, date_receipt, text, file]
+                for (var i = 0; i < array_values.length; i++) {
+                    var td = $('<td></td>').text(array_values[i])
+                    $('#' + reverse_number).append(td)
+                };
+            };
+        };
+        socket.onclose = function(e) {
+            console.log('Chat socket closed unexpectedly');
+        };
+    });
+</script>

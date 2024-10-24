@@ -3,14 +3,23 @@
     <a href="{% url 'mailscaner:main' %}">Back</a>
     <h3 class="text-center">List Emails</h3>
     <div class="card mt-2 p-2">
-        <ul>
+        {% if emails %}
+        <ul class="list-group">
             {% for email in emails %}
-                <a href="">
-                    <li>
-                        {{ email.address }}
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'mailscaner:download' email.pk %}">
+                                {{ email.address }}
+                            </a>                            
+                            <a class="btn border btn-sm" href="{% url 'mailscaner:delete' email.pk %}">Delete</a>
+                        </div>
                     </li>
-                </a>
             {% endfor %}
         </ul>
+        {% else %}
+        <div class="text-center">
+            <h5>List is empty</h5>
+        </div>
+        {% endif %}
     </div>
 </div>

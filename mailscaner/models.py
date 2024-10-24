@@ -19,7 +19,7 @@ class Email(models.Model):
                                 help_text='Пароль от почты',
                                 )
 
-    user = models.ForeignKey(CurrentUser,
+    user = models.ForeignKey(get_user_model(),
                              verbose_name='пользователь',
                              on_delete=models.CASCADE,
                              related_name='user_emails',
@@ -41,7 +41,13 @@ class Message(models.Model):
     title = models.CharField(max_length=254,
                              verbose_name='тема',
                              help_text='Тема сообщения',
+                             null=True,
+                             blank=True,
                              )
+    sender = models.EmailField(max_length=254,
+                               verbose_name='отправитель',
+                               help_text='Отправитель письма',
+                               )
     date_sending = models.DateTimeField(verbose_name='дата отправки',
                                         help_text='Дата отправки сообщения',
                                         )
