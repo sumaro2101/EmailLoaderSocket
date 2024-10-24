@@ -143,6 +143,14 @@ USE_TZ = True
 DEFAULT_CHARSET = 'utf-8'
 
 
+IMAP_GMAIL = 'imap.gmail.com'
+PORT_GMAIL = 993
+IMAP_MAIL = 'imap.mail.ru'
+PORT_MAIL = 993
+IMAP_YANDEX = 'imap.yandex.ru'
+PORT_YANDEX = 993
+
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
