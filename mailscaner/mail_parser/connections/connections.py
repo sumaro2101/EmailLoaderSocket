@@ -15,7 +15,6 @@ class GmailConnection(BaseConnection):
     @classmethod
     def _get_port(cls):
         return settings.PORT_GMAIL
-    
 
 
 class YandexConnection(BaseConnection):

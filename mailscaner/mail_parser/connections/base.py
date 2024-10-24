@@ -93,10 +93,10 @@ class BaseConnection(AbstractConnection):
                 raise FailConnection(error)
             form.add_error(field=None, error=error)
 
-    def __enter__(self) -> list[bytes]:
+    def __enter__(self) -> list[int]:
         return self.messages
 
-    def action(self) -> list[bytes]:
+    def action(self) -> list[int]:
         """
         Создание подключения с настройками
         """
@@ -108,5 +108,5 @@ class BaseConnection(AbstractConnection):
         self.messages = self._search_data(
             charset=self.charset,
             criteria=self.criteria,
-            )[0][1]
+            )[0].split()
         return self.messages

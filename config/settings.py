@@ -149,6 +149,7 @@ IMAP_MAIL = 'imap.mail.ru'
 PORT_MAIL = 993
 IMAP_YANDEX = 'imap.yandex.ru'
 PORT_YANDEX = 993
+RFC822 = '(RFC822)'
 
 EMAIL_READONLY = bool(int(find_env('EMAIL_READONLY')))
 

@@ -51,5 +51,5 @@ class AbstractConnection(ABC):
         pass
 
     @abstractmethod
-    def __enter__(self) -> list[bytes]:
+    def __enter__(self) -> list[int]:
         pass
