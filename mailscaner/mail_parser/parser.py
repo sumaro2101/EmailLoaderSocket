@@ -70,13 +70,28 @@ class Parser:
 
     def load_messages(self):
         uids = self.messages
-        values = dict()
         if self.from_end_to_start:
             uids = reversed(uids)
         for index, uid in enumerate(uids):
             res, msg = self.server.fetch(uid, self.__RFC)
             if res == 'OK':
                 msg = email.message_from_bytes(msg[0][1])
+                title = self._subject_parse(msg['Subject'])
+                sender = self._return_path_parse(msg['Return-path'])
+                date_sending = self._date_parse(msg['Date'])
+                date_receipt = self._date_parse(msg['Date'])
+                text = self.TextParser(msg).parse()
+                files = self.FileParser(msg).parse()
+                values = dict(
+                    number=index,
+                    title=title,
+                    sender=sender,
+                    date_sending=date_sending,
+                    date_receipt=date_receipt,
+                    text=text,
+                    files=files,
+                )
+                yield values
 
 
 class TextParser:
