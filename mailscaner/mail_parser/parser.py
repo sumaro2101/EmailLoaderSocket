@@ -30,6 +30,7 @@ class Parser:
         self.messages = connection
         self.server = connection.server
         self.TextParser = TextParser
+        self.FileParser = FileParser
 
     def _date_parse(self, mess_date: str) -> datetime | None:
         """
@@ -139,3 +140,10 @@ class FileParser:
     """
     def __init__(self, message: Message) -> None:
         self.message = message
+        self.attachments = list()
+
+    def parse(self):
+        """
+        Парсит файл из полученного сообщения
+        """
+        

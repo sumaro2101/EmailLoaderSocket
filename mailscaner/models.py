@@ -39,6 +39,22 @@ class Email(models.Model):
     def __str__(self):
         return self.address
 
+ 
+class File(models.Model):
+    """
+    Модель файла
+    """
+    name = models.CharField(max_length=245,
+                            verbose_name='имя',
+                            help_text='Имя сохраненного файла',
+                            )
+    file = models.FileField(upload_to=f'{name}/',
+                            verbose_name='файл',
+                            help_text='Файл из сообщения, если есть',
+                            null=True,
+                            blank=True,
+                            )
+
 
 class Message(models.Model):
     """
@@ -65,13 +81,11 @@ class Message(models.Model):
     text = models.TextField(verbose_name='текст сообщения',
                             help_text='Текст из сообщения',
                             )
-    file = models.FileField(upload_to=f'{date_receipt}/{title}/',
-                            verbose_name='файл',
-                            help_text='Файл из сообщения, если есть',
-                            null=True,
-                            blank=True,
-                            )
 
+    files = models.ManyToManyField(File,
+                                   verbose_name='файлы',
+                                   help_text='Сохраненые файлы',
+                                   )
     email = models.ForeignKey(Email,
                               on_delete=models.CASCADE,
                               verbose_name='эмеил',
