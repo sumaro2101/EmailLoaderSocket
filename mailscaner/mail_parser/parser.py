@@ -4,6 +4,8 @@ import email
 import email.header
 import email.parser
 import email.utils
+import re
+import io
 
 from email.message import Message
 import quopri
@@ -64,6 +66,7 @@ class Parser:
         """
         if from_:
             from_email = from_.lstrip('<').rsplit('>')
+            return from_email
 
     def load_messages(self):
         uids = self.messages
@@ -141,9 +144,50 @@ class FileParser:
     def __init__(self, message: Message) -> None:
         self.message = message
         self.attachments = list()
+    
+    def _get_name_file(self, part) -> str:
+        enode_name = re.findall("\=\?.*?\?\=", part)
+        if len(enode_name) == 1:
+            value = enode_name[0]
+            encoding = email.header.decode_header(value)[0][1]
+            decode_name = email.header.decode_header(value)[0][0]
+            decode_name = decode_name.decode(encoding)
+            str_playload = part.replace(value, decode_name)
+        if len(enode_name) > 1:
+            nm = ""
+            value = enode_name[0]
+            for name in enode_name:
+                encoding = email.header.decode_header(name)[0][1]
+                decode_name = email.header.decode_header(name)[0][0]
+                try:
+                    decode_name = decode_name.decode(encoding)
+                except AttributeError:
+                    pass
+                nm += decode_name
+            str_playload = part.replace(value[0], nm)
+            for c, i in enumerate(enode_name):
+                if c > 0:
+                    str_playload = (str_playload.
+                                    replace(enode_name[c], "").
+                                    replace('"', "").rstrip())
+        return str_playload.split(';')[-1].replace('name=', '')
 
-    def parse(self):
+    def _get_attachments(self, message: Message) -> list[File]:
+        for part in message.walk():
+            disposition = part.get_content_disposition()
+            content_type = part['Content-Type']
+            if (content_type and
+                'name' in content_type and
+                disposition == 'attachment'):
+                name = self._get_name_file(part)
+                payload: bytes = base64.b64decode(part.get_payload())
+                file = File(file=io.BytesIO(payload), name=name)
+                self.attachments.append(file)
+        return self.attachments
+
+    def parse(self) -> list[File]:
         """
         Парсит файл из полученного сообщения
         """
-        
+        files = self._get_attachments(self.message)
+        return files
