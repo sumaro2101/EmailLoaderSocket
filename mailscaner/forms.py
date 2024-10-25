@@ -4,6 +4,11 @@ from django.db.models import Q
 
 from .models import Email
 from .regex import check_email_type
+from .mail_parser.connections import (
+    GmailConnection,
+    MailConnection,
+    YandexConnection,
+)
 
 
 class EmailCreateFrom(forms.ModelForm):
@@ -29,6 +34,7 @@ class EmailCreateFrom(forms.ModelForm):
 
     def clean(self) -> dict[str, Any]:
         address = self.cleaned_data.get('address')
+        password = self.cleaned_data.get('password')
         dublicate = (Email
                      .objects
                      .filter(Q(address=address)
@@ -39,6 +45,27 @@ class EmailCreateFrom(forms.ModelForm):
                 'address',
                 'This Email exists for this user',
             )
+
+        match address.split('@'):
+            case _, email_type if email_type == 'yandex.ru':
+                YandexConnection.connection(
+                    login=address,
+                    password=password,
+                    form=self,
+                )
+            case _, email_type if email_type == 'mail.ru':
+                MailConnection.connection(
+                    login=address,
+                    password=password,
+                    form=self,
+                )
+            case _, email_type if email_type == 'gmail.com':
+                GmailConnection.connection(
+                    login=address,
+                    password=password,
+                    form=self,
+                )
+
         return self.cleaned_data
 
     def save(self, commit: bool = ...) -> Any:

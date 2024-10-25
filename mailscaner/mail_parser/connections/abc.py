@@ -41,8 +41,8 @@ class AbstractConnection(ABC):
                            tuple):
         pass
 
-    @abstractmethod
     @classmethod
+    @abstractmethod
     def connection(cls,
                    login: str,
                    password: str,

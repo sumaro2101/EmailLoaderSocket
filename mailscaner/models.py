@@ -18,8 +18,14 @@ class Email(models.Model):
                                 verbose_name='password',
                                 help_text='Пароль от почты',
                                 )
+    last_index = models.BinaryField(null=True,
+                                    blank=True,
+                                    verbose_name='последний индекс',
+                                    help_text='Последний uid выгруженного '
+                                    'из почты',
+                                    )
 
-    user = models.ForeignKey(get_user_model(),
+    user = models.ForeignKey(CurrentUser,
                              verbose_name='пользователь',
                              on_delete=models.CASCADE,
                              related_name='user_emails',
@@ -47,6 +53,8 @@ class Message(models.Model):
     sender = models.EmailField(max_length=254,
                                verbose_name='отправитель',
                                help_text='Отправитель письма',
+                               null=True,
+                               blank=True,
                                )
     date_sending = models.DateTimeField(verbose_name='дата отправки',
                                         help_text='Дата отправки сообщения',

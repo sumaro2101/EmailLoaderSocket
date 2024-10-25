@@ -89,9 +89,10 @@ class BaseConnection(AbstractConnection):
             server.login(login, password)
             return server
         except IMAP4.error as error:
+            message = error.args[0].decode()
             if not form:
-                raise FailConnection(error)
-            form.add_error(field=None, error=error)
+                raise FailConnection(message)
+            form.add_error(field=None, error=message)
 
     def __enter__(self) -> list[int]:
         return self.messages
@@ -106,11 +107,20 @@ class BaseConnection(AbstractConnection):
         for i in reversed(range(len(self.messages))):
             yield self.messages[i]
 
+    def __iter__(self):
+        i = 0
+        try:
+            while True:
+                v = self[i]
+                yield v
+                i += 1
+        except IndexError:
+            return
+
     def reverse(self):
-        sequence = self.messages
-        n = len(sequence)
+        n = len(self)
         for i in range(n//2):
-            sequence[i], sequence[n-i-1] = sequence[n-i-1], sequence[i]
+            self[i], self[n-i-1] = self[n-i-1], self[i]
 
     def action(self) -> list[int]:
         """
