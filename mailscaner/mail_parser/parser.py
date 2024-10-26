@@ -22,7 +22,6 @@ class Parser:
     """
     Парсер сообщений
     """
-    from_end_to_start = True
     __RFC = settings.RFC822
     __decode = settings.DECODER
 
@@ -70,8 +69,6 @@ class Parser:
 
     def load_messages(self):
         uids = self.messages
-        if self.from_end_to_start:
-            uids = reversed(uids)
         for index, uid in enumerate(uids):
             res, msg = self.server.fetch(uid, self.__RFC)
             if res == 'OK':

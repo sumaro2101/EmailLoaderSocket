@@ -26,6 +26,8 @@ class BaseConnection(AbstractConnection):
                                 ] = 'INBOX',
                  charset: str | None = None,
                  criteria: str = 'ALL',
+                 limit: int | None = None,
+                 set_reverse: bool = True,
                  ) -> None:
         self.__login = login
         self.__password = password
@@ -34,6 +36,10 @@ class BaseConnection(AbstractConnection):
         self.criteria = criteria
         self.server: IMAP4_SSL = None
         self.messages = self.action()
+        self.limit = limit
+        if limit:
+            self.limit = slice(0, limit)
+        self.set_reverse = set_reverse
 
     def _select_box(self,
                     box: str,
@@ -49,7 +55,19 @@ class BaseConnection(AbstractConnection):
                           tuple[Any, list[None]] |
                           tuple):
         return self.server.search(charset, criteria)
-    
+
+    def _set_limit(self,
+                   limit: slice | None,
+                   ) -> None:
+        if limit:
+            self.messages = self[limit]
+
+    def _set_reverse(self,
+                     reverse: bool,
+                     ) -> None:
+        if reverse:
+            self.reverse()
+
     @classmethod
     def _get_imap(cls):
         raise BaseConnectionError('You need use "GmailConnection", '
@@ -135,4 +153,6 @@ class BaseConnection(AbstractConnection):
             charset=self.charset,
             criteria=self.criteria,
             )[0].split()
+        self._set_reverse(self.set_reverse)
+        self._set_limit(self.limit)
         return self.messages
