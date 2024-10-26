@@ -4,6 +4,8 @@ from typing import Any, Literal
 from django.conf import settings
 from django.forms import BaseForm
 
+from loguru import logger
+
 from .abc import AbstractConnection
 from .exeptions import FailConnection, BaseConnectionError
 
@@ -34,12 +36,12 @@ class BaseConnection(AbstractConnection):
         self.mailbox = mailbox
         self.charset = charset
         self.criteria = criteria
-        self.server: IMAP4_SSL = None
-        self.messages = self.action()
         self.limit = limit
         if limit:
             self.limit = slice(0, limit)
         self.set_reverse = set_reverse
+        self.server: IMAP4_SSL = None
+        self.messages = self._action()
 
     def _select_box(self,
                     box: str,
@@ -140,7 +142,7 @@ class BaseConnection(AbstractConnection):
         for i in range(n//2):
             self[i], self[n-i-1] = self[n-i-1], self[i]
 
-    def action(self) -> list[int]:
+    def _action(self) -> list[int]:
         """
         Создание подключения с настройками
         """
@@ -153,6 +155,7 @@ class BaseConnection(AbstractConnection):
             charset=self.charset,
             criteria=self.criteria,
             )[0].split()
+        logger.info(self.__dict__)
         self._set_reverse(self.set_reverse)
         self._set_limit(self.limit)
         return self.messages
