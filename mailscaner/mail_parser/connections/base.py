@@ -56,7 +56,8 @@ class BaseConnection(AbstractConnection):
                      ) -> (tuple[Literal['NO'], Any] |
                           tuple[Any, list[None]] |
                           tuple):
-        return self.server.search(charset, criteria)
+        status, data = self.server.search(charset, criteria)
+        return data
 
     def _set_limit(self,
                    limit: slice | None,
@@ -115,7 +116,11 @@ class BaseConnection(AbstractConnection):
             form.add_error(field=None, error=message)
 
     def __enter__(self) -> list[int]:
-        return self.messages
+        return self
+
+    def __exit__(self, *args):
+        self.server.close()
+        self.server.logout()
 
     def __getitem__(self, index):
         return self.messages[index]
@@ -138,9 +143,10 @@ class BaseConnection(AbstractConnection):
             return
 
     def reverse(self):
+        messages = self.messages
         n = len(self)
         for i in range(n//2):
-            self[i], self[n-i-1] = self[n-i-1], self[i]
+            messages[i], messages[n-i-1] = messages[n-i-1], messages[i]
 
     def _action(self) -> list[int]:
         """
@@ -155,7 +161,7 @@ class BaseConnection(AbstractConnection):
             charset=self.charset,
             criteria=self.criteria,
             )[0].split()
-        logger.info(self.__dict__)
         self._set_reverse(self.set_reverse)
         self._set_limit(self.limit)
+        logger.info(self.__dict__)
         return self.messages

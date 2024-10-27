@@ -1,4 +1,7 @@
 from imaplib import IMAP4_SSL
+import email
+
+from loguru import logger
 
 from django.test import TestCase
 from django.conf import settings
@@ -10,18 +13,32 @@ from mailscaner.mail_parser.connections import GmailConnection
 TEST_EMAIL = settings.TEST_EMAIL_HOST_GMAIL
 TEST_PASSWORD = settings.TEST_EMAIL_PASSWORD_GMAIL
 
-messages = GmailConnection(
+
+connect = GmailConnection(
             login=TEST_EMAIL,
             password=TEST_PASSWORD,
-            limit=1,
+            # limit=2,
             )
+
+parser = Parser(connection=connect)
+    # uid = parser.messages[0]
+    # res, fetched_value = parser.server.fetch(uid, settings.RFC822)
+    # logger.info(uid)
+    # logger.info(fetched_value[0][1])
+    # message = (email
+    #            .message_from_bytes(
+    #                fetched_value[0][1]),
+    #            )
+
 
 class TestEmailParser(TestCase):
     """
     Тесты парсера эмеила
     """
     def setUp(self) -> None:
-        self.messages = messages
+        self.messages = connect
+        self.parser = parser
+        self.message = parser.messages[0]
 
     def test_check_connection(self):
         connection = GmailConnection.connection(
@@ -33,5 +50,14 @@ class TestEmailParser(TestCase):
     def test_limit(self):
         self.assertEqual(len(self.messages), 1)
     
-    def test_parse_date(self):
-        pass
+    # def test_parse_date(self):
+    #     value = parser._date_parse(self.message['Date'])
+    #     self.assertEqual(value, 0)
+    
+    def test_parser(self):
+        generator = parser.load_messages()
+        value = None
+        for item in generator:
+            value = item
+        self.assertEqual(len(value), 7)
+        self.parser.server.logout()
