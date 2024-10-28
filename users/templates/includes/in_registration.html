@@ -16,7 +16,7 @@
             <div class="form-error">{{ form.non_field_errors }}</div>
             {% endif %}
                 <div class="form-floating">
-                    <input class="form-control" {% if form.username.value %}value="{{ form.username.value }}"{% endif %} type="text" name="username" placeholder="{{ form.username.label }}" autofocus="true" required {% if value.username %}value="{{ value.username }}"{% endif %} id="id_username">
+                    <input class="form-control" type="text" name="username" placeholder="{{ form.username.label }}" autofocus="true" required id="id_username">
                     <label class="form-label text-secondary" for="id_username">* {{ form.username.label }}</label>
                 </div>
                 <div class="form-error">{{ form.username.errors }}</div>

@@ -37,6 +37,11 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    # daphne
+    'daphne.apps.DaphneConfig',
+    # channels
+    'channels.apps.ChannelsConfig',
+    # Django
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -77,7 +82,17 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "config.wsgi.application"
+ASGI_APPLICATION = 'config.asgi.application'
 
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
@@ -126,6 +141,21 @@ USE_TZ = True
 
 
 DEFAULT_CHARSET = 'utf-8'
+
+
+IMAP_GMAIL = 'imap.gmail.com'
+PORT_GMAIL = 993
+IMAP_MAIL = 'imap.mail.ru'
+PORT_MAIL = 993
+IMAP_YANDEX = 'imap.yandex.ru'
+PORT_YANDEX = 993
+RFC822 = '(RFC822)'
+DECODER = 'UTF-8'
+
+TEST_EMAIL_HOST_GMAIL = find_env('TEST_EMAIL_HOST_GMAIL')
+TEST_EMAIL_PASSWORD_GMAIL = find_env('TEST_EMAIL_PASSWORD_GMAIL')
+
+EMAIL_READONLY = bool(int(find_env('EMAIL_READONLY')))
 
 
 # Static files (CSS, JavaScript, Images)

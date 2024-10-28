@@ -8,12 +8,15 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 django = "^5.1.2"
-channels = "^4.1.0"
 redis = "^5.1.1"
 loguru = "^0.7.2"
 python-dotenv = "^1.0.1"
 psycopg2-binary = "^2.9.10"
 pillow = "^11.0.0"
+channels = "4.0.0"
+channels-redis = "4.1.0"
+daphne = "4.0.0"
+bs4 = "^0.0.2"
 
 
 [build-system]
