@@ -57,3 +57,42 @@ message = parser.parse()
 ```
 Это все что необходимо для выполнения работы Parser.
 Parser отдает dict со всеми данными что получилось изьять из сообщения.
+
+# WebSocket
+## Для реализации WebSocket нужно:
+1. Инициализировать экземпляр WebSocket в JavaSctipt
+```JavaScript
+const socket = new WebSocket(
+        'ws://'
+        + window.location.host
+        + '/email/download/'
+        + pk
+        + '/'
+    );
+```
+2. Определить действия для каждого события
+```JavaScript
+socket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+};
+socket.onopen = function(e) {
+    // some move
+};
+socket.onclose = function(e) {
+    this.close()
+    console.log('Socket closed unexpectedly');
+};
+```
+3. Написать потребителя AsyncWebsocketConsumer
+4. Указать Routing
+5. Изменить точку входа на asgi с помощью ProtocolTypeRouter с указание websocket
+```Python
+application = ProtocolTypeRouter(dict(
+    http=django_asgi_app,
+    websocket=AuthMiddlewareStack(
+        URLRouter(
+            mailscaner.routing.websocket_urlpatterns
+        )
+    ),
+))
+```
