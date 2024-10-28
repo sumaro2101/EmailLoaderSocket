@@ -48,11 +48,12 @@ class File(models.Model):
                             verbose_name='имя',
                             help_text='Имя сохраненного файла',
                             )
-    file = models.FileField(upload_to=f'{name}/',
+    file = models.FileField(upload_to=f'images/',
                             verbose_name='файл',
                             help_text='Файл из сообщения, если есть',
                             null=True,
                             blank=True,
+                            max_length=300,
                             )
 
 
@@ -80,6 +81,8 @@ class Message(models.Model):
                                         )
     text = models.TextField(verbose_name='текст сообщения',
                             help_text='Текст из сообщения',
+                            null=True,
+                            blank=True,
                             )
 
     files = models.ManyToManyField(File,
@@ -98,7 +101,7 @@ class Message(models.Model):
         verbose_name_plural = 'Messages'
 
     def __str__(self):
-        return self.date_receipt
+        return str(self.date_receipt)
 
     def get_absolute_url(self):
         return reverse("message_detail", kwargs={"pk": self.pk})

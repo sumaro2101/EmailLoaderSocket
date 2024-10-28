@@ -3,6 +3,8 @@ from typing import Any, Literal
 
 from django.conf import settings
 from django.forms import BaseForm
+import socket
+import time
 
 from loguru import logger
 
@@ -28,7 +30,7 @@ class BaseConnection(AbstractConnection):
                                 ] = 'INBOX',
                  charset: str | None = None,
                  criteria: str = 'ALL',
-                 limit: int | None = None,
+                 limit: bytes | None = None,
                  set_reverse: bool = True,
                  ) -> None:
         self.__login = login
@@ -37,8 +39,6 @@ class BaseConnection(AbstractConnection):
         self.charset = charset
         self.criteria = criteria
         self.limit = limit
-        if limit:
-            self.limit = slice(0, limit)
         self.set_reverse = set_reverse
         self.server: IMAP4_SSL = None
         self.messages = self._action()
@@ -60,10 +60,12 @@ class BaseConnection(AbstractConnection):
         return data
 
     def _set_limit(self,
-                   limit: slice | None,
+                   limit: bytes | None,
                    ) -> None:
         if limit:
-            self.messages = self[limit]
+            value = bytes(limit)
+            index = self.messages.index(value)
+            self.messages = self[:index]
 
     def _set_reverse(self,
                      reverse: bool,
@@ -72,6 +74,7 @@ class BaseConnection(AbstractConnection):
             self.reverse()
 
     @classmethod
+    @logger.catch(reraise=True)
     def _get_imap(cls):
         raise BaseConnectionError('You need use "GmailConnection", '
                                   '"MailConnection", or "YandexConnection", '
@@ -103,9 +106,18 @@ class BaseConnection(AbstractConnection):
         """        
         imap = cls._get_imap()
         port = cls._get_port()
-        server = IMAP4_SSL(host=imap,
-                           port=port,
-                           )
+        logger.debug(f'imap get {imap}')
+        logger.debug(f'port {port}')
+        connect = False
+        while not connect:
+            try:
+                server = IMAP4_SSL(host=imap,
+                            port=port,
+                )
+                connect = True
+            except socket.gaierror:
+                logger.warning('No have connecting, try 3 seconds')
+                time.sleep(3)
         try:
             server.login(login, password)
             return server
@@ -115,7 +127,7 @@ class BaseConnection(AbstractConnection):
                 raise FailConnection(message)
             form.add_error(field=None, error=message)
 
-    def __enter__(self) -> list[int]:
+    def __enter__(self) -> list[bytes]:
         return self
 
     def __exit__(self, *args):
@@ -148,7 +160,7 @@ class BaseConnection(AbstractConnection):
         for i in range(n//2):
             messages[i], messages[n-i-1] = messages[n-i-1], messages[i]
 
-    def _action(self) -> list[int]:
+    def _action(self) -> list[bytes]:
         """
         Создание подключения с настройками
         """
@@ -163,5 +175,4 @@ class BaseConnection(AbstractConnection):
             )[0].split()
         self._set_reverse(self.set_reverse)
         self._set_limit(self.limit)
-        logger.info(self.__dict__)
         return self.messages

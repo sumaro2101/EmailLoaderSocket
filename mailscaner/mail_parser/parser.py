@@ -7,6 +7,8 @@ import email.utils
 import re
 import io
 
+from imaplib import IMAP4_SSL
+
 from loguru import logger
 
 from email.message import Message
@@ -17,7 +19,6 @@ from bs4.element import ResultSet
 
 from django.conf import settings
 from django.core.files import File
-from .connections.base import BaseConnection
 
 
 class Parser:
@@ -27,10 +28,11 @@ class Parser:
     __RFC = settings.RFC822
 
     def __init__(self,
-                 connection: BaseConnection
+                 connection: IMAP4_SSL,
+                 uid: bytes,
                  ) -> None:
-        self.messages = connection
-        self.server = connection.server
+        self.server = connection
+        self.uid = uid
         self.TextParser = TextParser
         self.FileParser = FileParser
 
@@ -57,11 +59,26 @@ class Parser:
             subject_bytes = email.header.decode_header(subject)
             codec, data = subject_bytes[0][-1], subject_bytes[0][0]
             if isinstance(data, bytes):
-                if codec == 'iso-8859-8-i':
-                    codec = 'iso-8859-8'
-                deconed_subject = data.decode(encoding=codec)
+                logger.debug('data is bytest')
+                if codec:
+                    if codec == 'iso-8859-8-i':
+                        codec = 'iso-8859-8'
+                        deconed_subject = data.decode(encoding=codec)
+                    elif codec == 'unknown-8bit':
+                        logger.debug(f'enter to codec {codec}')
+                        logger.debug(data)
+                        try:
+                            deconed_subject = data.decode(encoding='utf-8')
+                        except UnicodeDecodeError:
+                            deconed_subject = data.decode(encoding='iso-8859-8')
+                    else:
+                        deconed_subject = data.decode(encoding=codec)
+                        logger.debug(f'decoded {deconed_subject}')
+                else:
+                    deconed_subject = data
             if isinstance(data, str):
                 deconed_subject = data
+            logger.debug(data)
             clear_subject = str(deconed_subject).strip('<>').replace('<', '')
             logger.debug(f'_subject_parse get {clear_subject}')
             return clear_subject
@@ -75,34 +92,31 @@ class Parser:
             logger.debug(f'_return_path_parse get {from_email}')
             return from_email
 
-    def load_messages(self):
-        uids = self.messages
-        for index, uid in enumerate(uids):
-            res, msg = self.server.fetch(uid, self.__RFC)
-            if res == 'OK':
-                msg = email.message_from_bytes(msg[0][1])
-                title = self._subject_parse(msg['Subject'])
-                sender = self._return_path_parse(msg['Return-path'])
-                date_sending = self._date_parse(msg['Received'].split(';')[-1])
-                date_receipt = self._date_parse(msg['Date'])
-                text = self.TextParser(msg).parse()
-                files = self.FileParser(msg).parse()
-                logger.info(f'title is {title}')
-                logger.info(f'sender if {sender}')
-                logger.info(f'date_sendin is {date_sending}')
-                logger.info(f'date_receipt is {date_receipt}')
-                logger.info(f'text is {text}')
-                logger.info(f'files is {files}')
-                values = dict(
-                    number=index + 1,
-                    title=title,
-                    sender=sender,
-                    date_sending=date_sending,
-                    date_receipt=date_receipt,
-                    text=text,
-                    files=files,
-                )
-                yield values
+    def parse(self):
+        res, msg = self.server.fetch(self.uid, self.__RFC)
+        if res == 'OK':
+            msg = email.message_from_bytes(msg[0][1])
+            title = self._subject_parse(msg['Subject'])
+            sender = self._return_path_parse(msg['Return-path'])
+            date_sending = self._date_parse(msg['Received'].split(';')[-1])
+            date_receipt = self._date_parse(msg['Date'])
+            text = self.TextParser(msg).parse()
+            files = self.FileParser(msg).parse()
+            logger.info(f'title is {title}')
+            logger.info(f'sender if {sender}')
+            logger.info(f'date_sendin is {date_sending}')
+            logger.info(f'date_receipt is {date_receipt}')
+            logger.info(f'text is {text}')
+            logger.info(f'files is {files}')
+            values = dict(
+                title=title,
+                sender=sender,
+                date_sending=date_sending,
+                date_receipt=date_receipt,
+                text=text,
+                files=files,
+            )
+            return values
 
 
 class TextParser:
@@ -122,7 +136,7 @@ class TextParser:
             logger.debug(f'part is Content-Transfer-Encoding {part["Content-Transfer-Encoding"]}')
             encoding = part.get_content_charset()
             logger.debug(f'encoding is {encoding}')
-            if encoding == 'utf8':
+            if not encoding or encoding == 'utf8':
                 encoding = 'utf-8'
             payload = base64.b64decode(payload).decode(encoding=encoding, errors='ignore')
             return payload
@@ -204,9 +218,12 @@ class FileParser:
             logger.info('len enode_name 1')
             value = enode_name[0]
             encoding = email.header.decode_header(value)[0][1]
+            if encoding == 'iso-8859-8-i':
+                encoding = 'iso-8859-8'
             decode_name = email.header.decode_header(value)[0][0]
             decode_name = decode_name.decode(encoding)
             str_playload = str_playload.replace(value, decode_name)
+            logger.info(f'return name {str_playload}')
         if len(enode_name) > 1:
             logger.info('len enode_name more then 1')
             nm = ""
@@ -214,12 +231,16 @@ class FileParser:
             for name in enode_name:
                 encoding = email.header.decode_header(name)[0][1]
                 decode_name = email.header.decode_header(name)[0][0]
-                try:
-                    decode_name = decode_name.decode(encoding)
-                except AttributeError:
-                    pass
-                nm += decode_name
-            str_playload = str_playload.replace(value[0], nm)
+                if encoding:
+                    try:
+                        decode_name = decode_name.decode(encoding)
+                    except UnicodeDecodeError:
+                        decode_name = decode_name.decode(encoding='iso-8859-1')
+                    nm += decode_name
+                logger.info(f'return composite name {nm}')
+            logger.debug(f'str_playload before {str_playload}')
+            str_playload = str_playload.replace(value, nm)
+            logger.debug(f'str_playload after replace {value} to {nm} - {str_playload}')
             for c, i in enumerate(enode_name):
                 if c > 0:
                     str_playload = (str_playload.
@@ -238,8 +259,10 @@ class FileParser:
                 'name' in content_type and
                 disposition == 'attachment'):
                 name = self._get_name_file(content_type)
+                logger.info(f'name file is {name}')
                 payload: bytes = base64.b64decode(part.get_payload())
                 file = File(file=io.BytesIO(payload), name=name)
+                logger.info(f'set file {file}')
                 self.attachments.append(file)
         return self.attachments
 

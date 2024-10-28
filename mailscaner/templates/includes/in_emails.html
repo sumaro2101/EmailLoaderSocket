@@ -8,10 +8,14 @@
             {% for email in emails %}
                     <li class="list-group-item">
                         <div class="d-flex justify-content-between">
-                            <a href="{% url 'mailscaner:download' email.pk %}">
-                                {{ email.address }}
-                            </a>                            
-                            <a class="btn border btn-sm" href="{% url 'mailscaner:delete' email.pk %}">Delete</a>
+                            <strong>{{ email.address }}</strong>
+                            <a class='btn border' href="{% url 'mailscaner:download' email.pk %}">
+                                UploadData
+                            </a>
+                            <a class='btn border' href="">
+                                Show list
+                            </a>                          
+                            <a class="btn btn-danger border" href="{% url 'mailscaner:delete' email.pk %}">Delete</a>
                         </div>
                     </li>
             {% endfor %}
