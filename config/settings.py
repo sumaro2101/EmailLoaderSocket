@@ -12,31 +12,45 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 from pathlib import Path
 
+from dotenv import load_dotenv
+from config.utils import find_env
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+ENV_DIR = Path(__file__).resolve() / '.env'
+
+load_dotenv('.env')
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-qq_*fpv@!n_)(l9irlet#8m6gtceq)*o#5zi0q&6y+^hsh1u!w"
+SECRET_KEY = find_env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    # daphne
+    'daphne.apps.DaphneConfig',
+    # channels
+    'channels.apps.ChannelsConfig',
+    # Django
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # custom apps
+    'mailscaner.apps.MailscanerConfig',
+    'users.apps.UsersConfig',
 ]
 
 MIDDLEWARE = [
@@ -54,7 +68,7 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / 'templates'],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -68,15 +82,28 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "config.wsgi.application"
+ASGI_APPLICATION = 'config.asgi.application'
 
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": ['redis://redis'],
+        },
+    },
+}
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': find_env('DB_NAME'),
+        'USER': find_env('DB_USER'),
+        'HOST': find_env('DB_HOST'),
+        'PASSWORD': find_env('DB_PASSWORD'),
     }
 }
 
@@ -112,12 +139,41 @@ USE_I18N = True
 USE_TZ = True
 
 
+DEFAULT_CHARSET = 'utf-8'
+
+
+IMAP_GMAIL = 'imap.gmail.com'
+PORT_GMAIL = 993
+IMAP_MAIL = 'imap.mail.ru'
+PORT_MAIL = 993
+IMAP_YANDEX = 'imap.yandex.ru'
+PORT_YANDEX = 993
+RFC822 = '(RFC822)'
+DECODER = 'UTF-8'
+
+TEST_EMAIL_HOST_GMAIL = find_env('TEST_EMAIL_HOST_GMAIL')
+TEST_EMAIL_PASSWORD_GMAIL = find_env('TEST_EMAIL_PASSWORD_GMAIL')
+
+EMAIL_READONLY = bool(int(find_env('EMAIL_READONLY')))
+
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = 'static/'
+STATICFILES_DIRS = [BASE_DIR / 'static/']
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
+
+LOGIN_URL = 'users:login'
+LOGOUT_REDIRECT_URL = 'users:login'
+
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+AUTH_USER_MODEL = 'users.User'

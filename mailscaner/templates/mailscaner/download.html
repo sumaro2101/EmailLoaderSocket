@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    {% include 'includes/in_download.html' %}
+{% endblock content %}
+{% block scripts %}
+    <script src="{% static 'js/websocketJs.js' %}"></script>
+{% endblock scripts %}

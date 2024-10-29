@@ -1,0 +1,50 @@
+{% load static %}
+<a href="{% url 'users:login' %}">Back</a>
+<h3 class="text-center">Registration</h3>
+<div class="card mt-2 p-2">
+    <form class="offset-3 col-md-6 card-body mb-4 p-2" action="{% url 'users:reg' %}" method="post">
+        <div class="card-title">
+            <p class="text-center" style="font-size: 15px;">
+                <strong>Form registration, * is required</strong>
+            </p>
+        </div>
+        {% csrf_token %}
+
+            <input type="hidden" name="next" value="{{ next }}" />
+
+            {% if form.non_field_errors %}
+            <div class="form-error">{{ form.non_field_errors }}</div>
+            {% endif %}
+                <div class="form-floating">
+                    <input class="form-control" type="text" name="username" placeholder="{{ form.username.label }}" autofocus="true" required id="id_username">
+                    <label class="form-label text-secondary" for="id_username">* {{ form.username.label }}</label>
+                </div>
+                <div class="form-error">{{ form.username.errors }}</div>
+    
+                <div class="form-floating mt-2">
+                    <input class="form-control" type="email" {% if form.email.value %}value="{{ form.email.value }}"{% endif %} name="email" placeholder="{{ form.email.label }}" maxlength="254" {% if value.email %}value="{{ value.email }}"{% endif %} id="id_email">
+                    <label class="form-label text-secondary" for="id_email">{{ form.email.label }}</label>
+                </div>
+                <div class="form-error">{{ form.email.errors }}</div>
+    
+                <div class="form-floating mt-2">
+                    <input class="form-control" type="password" placeholder="{{ form.password1.label }}" name="password1" required id="id_password1">
+                    <label class="form-label text-secondary" for="id_password1">* {{ form.password1.label }}</label>
+                </div>
+                <div class="form-error">{{ form.password1.errors }}</div>
+                
+                <div class="form-floating mt-2">
+                    <input class="form-control" type="password" placeholder="{{ form.password2.label }}" name="password2" required id="id_password2">
+                    <label class="form-label text-secondary" for="id_password2">* {{ form.password2.label }}</label>
+                </div>
+                <div class="form-error">{{ form.password2.errors }}</div>    
+            <div class="col-md-12">
+                <button class="btn mt-2 border" style="box-shadow: 0 1px 2px 0 rgba(0,0,0,.16);" type="submit">Submit</button>
+            </div>
+    </form>
+    <div class="card-footer">
+        <div class="offset-2 col-md-8">
+            <p style="font-size: 14px;"><strong>By registering you agree to <a href="">the processing of personal data and the collection of statistics</a></strong></p>
+        </div>
+    </div>
+</div>

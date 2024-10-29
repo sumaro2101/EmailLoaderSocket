@@ -1,0 +1,31 @@
+{% load static %}
+<div class="container">
+    <a href="{% url 'mailscaner:main' %}">Back</a>
+    <h3 class="text-center">List Emails</h3>
+    <div class="card mt-2 p-2">
+        {% if emails %}
+        <ul class="list-group">
+            {% for email in emails %}
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <strong>{{ email.address }}</strong>
+                            <a class='btn border' href="{% url 'mailscaner:download' email.pk %}">
+                                UploadData
+                            </a>
+                            <a class='btn border' href="{% url 'mailscaner:messages' email.pk %}">
+                                Show list
+                            </a>                          
+                            <a class="btn btn-danger border" href="{% url 'mailscaner:delete' email.pk %}">
+                                Delete
+                            </a>
+                        </div>
+                    </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="text-center">
+            <h5>List is empty</h5>
+        </div>
+        {% endif %}
+    </div>
+</div>

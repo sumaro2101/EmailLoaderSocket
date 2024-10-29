@@ -1,0 +1,32 @@
+{% load add_param_tag %}
+{% if page_obj.has_next or page_obj.has_previous %}
+<nav class="mt-4" aria-label="Page navigation example">
+    <ul class="pagination justify-content-center">
+    {% if page_obj.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?{% add_params page=page_obj.previous_page_number %}">Предыдущая</a>
+        <li class="page-item"><a class="page-link" href="?{% add_params page=page_obj.previous_page_number %}">{{ page_obj.previous_page_number }}</a></li>
+      </li>
+      {% else %}
+      <li class="page-item disabled">
+        <a class="page-link">Предыдущая</a>
+      </li>
+      <li class="page-item disabled"><a class="page-link">0</a></li>
+      {% endif %}
+
+      <li class="page-item active"><a class="page-link" href="?{% add_params page=page_obj.number %}">{{ page_obj.number }}</a></li>
+
+      {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?{% add_params page=page_obj.next_page_number %}">{{ page_obj.next_page_number }}</a></li>
+        <li class="page-item">
+            <a class="page-link" href="?{% add_params page=page_obj.next_page_number %}">Следующая</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled"><a class="page-link">{{ page_obj.number|add:'1' }}</a></li>
+        <li class="page-item disabled">
+            <a class="page-link">Следующая</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}

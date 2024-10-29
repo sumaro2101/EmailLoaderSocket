@@ -1,0 +1,37 @@
+{% load static %}
+<div class="container">
+    <a href="{% url 'mailscaner:main' %}">Back</a>
+    <h3 class="text-center mb-4">Messages from {{ email.address }}</h3>
+    <div class="card mt-2 p-2">
+        <div class="row p-3">
+            <div class="col"><strong>Title</strong></div>
+            <div class="col"><strong>Sender</strong></div>
+            <div class="col"><strong>Date Sending</strong></div>
+            <div class="col"><strong>Date Receipt</strong></div>
+            <div class="col"><strong>Text</strong></div>
+            <div class="col"><strong>Files</strong></div>
+        </div>
+        {% for message in messages %}
+        <a class="card m-2 p-1" href="{% url 'mailscaner:message' message.pk %}">
+            <div class="row">
+                <div class="col text-break" style="font-size: 12px;">{{ message.title|truncatechars:50 }}</div>
+                <div class="col text-break" style="font-size: 12px;">{{ message.sender }}</div>
+                <div class="col text-break" style="font-size: 12px;">{{ message.date_sending }}</div>
+                <div class="col text-break" style="font-size: 12px;">{{ message.date_receipt }}</div>
+                <div class="col text-break" style="font-size: 12px;">{{ message.text|truncatechars:100 }}</div>
+                <div class="col text-break" style="font-size: 12px;">
+                {% for file in message.files.all %}
+                    <div class="d-flex flex-column">
+                        {{ file.name }}
+                    </div>
+                {% empty %}
+                    Empty
+                {% endfor %}
+                </div>
+            </div>
+        </a>
+        {% empty %}
+            <h5 class="text-center">Not have messages yet</h5>
+        {% endfor %}
+    </div>
+</div>

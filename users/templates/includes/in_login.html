@@ -1,0 +1,37 @@
+{% load static %}
+
+<div class="container">
+    <div>
+        <div class="d-flex align-items-center">
+            <div class="card offset-4 col-4 p-3">
+                <div class="card-title">
+                    <h4>Authentication</h4>
+                </div>
+                <div class="card-body">
+                    <form action="{% url 'users:login' %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="text" value="{{ next }}"/>
+                        {% if form.non_field_errors %}
+                            <div class="form-error" style="font-size: 14px;"><strong>{{ form.non_field_errors }}</strong></div>
+                        {% endif %}
+                        <p>
+                            <label class="form-label" for="id_username">Login</label>
+                            <input class="form-control" type="text" {% if form.username.value %}value="{{ form.username.value }}"{% endif %} name="username" autofocus="true" autocapitalize="none" autocomplete="username" maxlength="150" required id="id_username">
+                        </p>
+                        <p>
+                            <label class="form-label" for="id_password">Password</label>
+                            <input class="form-control" type="password" name="password" autocomplete="current-password" required id="id_password">
+                        </p>
+                        <button class="offset-1 col-md-10 btn btn-success border mt-2" type="submit">Enter</button>
+                        <div class="d-flex justify-content-center">
+                            <a class="btn border btn-sm mt-2 ms-4" style="box-shadow: 0 1px 2px 0 rgba(0,0,0,.16);" href="{% url 'users:reg' %}">Registration</a>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer mt-4">
+                    <p style="font-size: 12px;">This service provides access to download your messages from various Email services.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
