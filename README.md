@@ -85,7 +85,7 @@ socket.onclose = function(e) {
 ```
 3. Написать потребителя AsyncWebsocketConsumer
 4. Указать Routing
-5. Изменить точку входа на asgi с помощью ProtocolTypeRouter с указание websocket
+5. Изменить точку входа на asgi с помощью ProtocolTypeRouter с указанием websocket
 ```Python
 application = ProtocolTypeRouter(dict(
     http=django_asgi_app,

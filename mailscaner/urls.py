@@ -1,4 +1,4 @@
-from django.urls import path, re_path
+from django.urls import path
 
 from .apps import MailscanerConfig
 from . import views
@@ -16,4 +16,5 @@ urlpatterns = [
     path('email/gmail/', views.EmailListView.as_view(), name='gmail'),
     path('email/mail/', views.EmailListView.as_view(), name='mail'),
     path('email/download/<int:pk>/', views.MessagesDownloadView.as_view(), name='download'),
+    path('email/messages/<int:pk>/', views.MessagesListView.as_view(), name='messages'),
 ]

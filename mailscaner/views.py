@@ -1,6 +1,6 @@
 from typing import Any
 from django.db.models.query import QuerySet
-from django.http import HttpRequest
+from django.http import HttpResponseBadRequest
 from django.views.generic import (TemplateView,
                                   CreateView,
                                   ListView,
@@ -15,10 +15,11 @@ from django.views.decorators.debug import sensitive_post_parameters
 from django.views.decorators.cache import never_cache
 
 from .forms import EmailCreateFrom
-from .models import Email
+from .models import Email, Message
 
 
-class MainPageView(mixins.LoginRequiredMixin, TemplateView):
+class MainPageView(mixins.LoginRequiredMixin,
+                   TemplateView):
     """
     View основной страницы
     """
@@ -30,7 +31,8 @@ class MainPageView(mixins.LoginRequiredMixin, TemplateView):
         return context
 
 
-class CreateEmailView(mixins.LoginRequiredMixin, CreateView):
+class CreateEmailView(mixins.LoginRequiredMixin,
+                      CreateView):
     """
     View создания эмеила
     """
@@ -54,7 +56,9 @@ class CreateEmailView(mixins.LoginRequiredMixin, CreateView):
         return context
 
 
-class DeleteEmailView(mixins.UserPassesTestMixin ,mixins.LoginRequiredMixin, DeleteView):
+class DeleteEmailView(mixins.LoginRequiredMixin,
+                      mixins.UserPassesTestMixin,
+                      DeleteView):
     """
     View удаления Эмеила
     """
@@ -71,7 +75,8 @@ class DeleteEmailView(mixins.UserPassesTestMixin ,mixins.LoginRequiredMixin, Del
         return self.object.user == self.request.user
 
 
-class DoneCreateEmailView(mixins.LoginRequiredMixin, TemplateView):
+class DoneCreateEmailView(mixins.LoginRequiredMixin,
+                          TemplateView):
     """
     View завершения создания эмеила
     """
@@ -83,7 +88,8 @@ class DoneCreateEmailView(mixins.LoginRequiredMixin, TemplateView):
         return context
 
 
-class EmailListView(mixins.LoginRequiredMixin, ListView):
+class EmailListView(mixins.LoginRequiredMixin,
+                    ListView):
     """
     View просмотра списка эмеилов пользователя
     """
@@ -105,13 +111,49 @@ class EmailListView(mixins.LoginRequiredMixin, ListView):
         return context
 
 
-class MessagesDownloadView(mixins.UserPassesTestMixin, mixins.LoginRequiredMixin, DetailView):
+class MessagesListView(mixins.LoginRequiredMixin,
+                       ListView):
+    """
+    View просмотра списка сообщений от эмеила
+    """
+    model = Email
+    context_object_name = 'messages'
+    template_name = 'mailscaner/messages_list.html'
+    paginate_by = 20
+
+    def get_queryset(self) -> QuerySet[Any]:
+        self.email = Email.objects.filter(
+            Q(user=self.request.user) &
+            Q(pk=self.kwargs['pk'])
+        )
+        if not self.email.exists():
+            return HttpResponseBadRequest('Email not found')
+        self.queryset = Message.objects.filter(
+            Q(email=self.email),
+        ).order_by('-date_receipt')
+        return self.queryset
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context.update(title='ListMessages',
+                       email=self.email,
+                       )
+        return context
+
+
+class MessagesDownloadView(mixins.LoginRequiredMixin,
+                           mixins.UserPassesTestMixin,
+                           DetailView):
     """
     View для загрузки сообщений из эмеил
     """
     model = Email
     context_object_name = 'email'
     template_name = 'mailscaner/download.html'
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context.update(title='Download')
 
     def test_func(self) -> bool | None:
         object_ = self.get_object()

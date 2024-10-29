@@ -35,6 +35,12 @@ class Email(models.Model):
     class Meta:
         verbose_name = 'Email'
         verbose_name_plural = 'Emails'
+        constraints = [
+            models.UniqueConstraint(
+                fields=('user_id', 'address'),
+                name='unique_user_address_constraint',
+            )
+        ]
 
     def __str__(self):
         return self.address
