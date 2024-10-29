@@ -3,8 +3,6 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 
 from loguru import logger
 
-from asgiref.sync import sync_to_async
-
 from django.db.models import Q
 
 from .models import Email, Message, File
@@ -42,15 +40,16 @@ class DownloadMessagesConsumer(AsyncWebsocketConsumer):
             case _, 'gmail.com':
                 logger.info('email gmail.com')
                 server = GmailConnection
-        self.connection = server(self.email.address,
-                                 self.email.password,
-                                 limit=self.email.last_index,
-                                 )
+        self.connection = server(
+            self.email.address,
+            self.email.password,
+            limit=self.email.last_index,
+            )
         list_uids = [id_.decode(encoding='utf-8')
                      for id_
                      in self.connection]
         self.count_items = len(list_uids)
-        self.num_summary = 1
+        self.num_summary = 0
         self.items_to_save = list()
         await self.channel_layer.group_send(
             self.group_id,
@@ -66,6 +65,7 @@ class DownloadMessagesConsumer(AsyncWebsocketConsumer):
             self.group_id,
             self.channel_name
         )
+        await self.close()
 
     async def receive(self, text_data=None, bytes_data=None):
         json_data = json.loads(text_data)
@@ -82,21 +82,26 @@ class DownloadMessagesConsumer(AsyncWebsocketConsumer):
             email=self.email,
             **values,
         ))
+        self.num_summary += 1
         if files:
             to_create = [File(name=file.name, file=file)
                          for file
                          in message['files']]
             created = await File.objects.abulk_create(to_create)
-            item = self.items_to_save.pop()
+            files_to_save = [file.id for file in created]
+            logger.debug(f'get to create files {to_create}')
+            item: Message = self.items_to_save.pop()
+            logger.debug(f'pop item is {item}')
             await item.asave()
-            sync_to_async(item.files.add)(created)
+            [await item.files.aadd(file)
+             for file
+             in files_to_save]
         procent = format((self.num_summary / self.count_items * 100),
                          '.2f',
                          )
-        logger.warning(f'{self.num_summary} is transit to send')
         values = {
                 'type': 'send_data',
-                'count' : (self.count_items - self.num_summary) + 1,
+                'count': (self.count_items - self.num_summary) + 1,
                 'reverse_number': self.num_summary,
                 'procent': procent,
                 'title': message['title'],
@@ -111,16 +116,14 @@ class DownloadMessagesConsumer(AsyncWebsocketConsumer):
             values,
         )
         logger.warning(f'{self.num_summary} is sended')
-        if len(self.items_to_save) == 10 or self.num_summary == self.count_items:
+
+        if (len(self.items_to_save) == 10 or
+           self.num_summary == self.count_items):
             logger.warning(f'last index the {uid}')
             await Message.objects.abulk_create(self.items_to_save)
             self.email.last_index = uid
             await self.email.asave()
             self.items_to_save.clear()
-        if self.num_summary == self.count_items:
-            await self.disconnect(code=200)
-            return
-        self.num_summary += 1
 
     async def send_data(self, event):
         count = event['count']

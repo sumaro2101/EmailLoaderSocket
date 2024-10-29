@@ -23,11 +23,11 @@ class BaseConnection(AbstractConnection):
                  login: str,
                  password: str,
                  mailbox: Literal['INBOX',
-                                'FLAGS',
-                                'EXISTS',
-                                'RECENT',
-                                'UIDVALIDITY',
-                                ] = 'INBOX',
+                                  'FLAGS',
+                                  'EXISTS',
+                                  'RECENT',
+                                  'UIDVALIDITY',
+                                  ] = 'INBOX',
                  charset: str | None = None,
                  criteria: str = 'ALL',
                  limit: bytes | None = None,
@@ -41,6 +41,7 @@ class BaseConnection(AbstractConnection):
         self.limit = limit
         self.set_reverse = set_reverse
         self.server: IMAP4_SSL = None
+        self.__online = False
         self.messages = self._action()
 
     def _select_box(self,
@@ -54,8 +55,8 @@ class BaseConnection(AbstractConnection):
                      charset: str | None,
                      criteria: str,
                      ) -> (tuple[Literal['NO'], Any] |
-                          tuple[Any, list[None]] |
-                          tuple):
+                           tuple[Any, list[None]] |
+                           tuple):
         status, data = self.server.search(charset, criteria)
         return data
 
@@ -72,6 +73,10 @@ class BaseConnection(AbstractConnection):
                      ) -> None:
         if reverse:
             self.reverse()
+
+    @property
+    def online(self):
+        return self.__online
 
     @classmethod
     @logger.catch(reraise=True)
@@ -103,7 +108,7 @@ class BaseConnection(AbstractConnection):
 
         Returns:
             IMAP4: IMAP сервер
-        """        
+        """
         imap = cls._get_imap()
         port = cls._get_port()
         logger.debug(f'imap get {imap}')
@@ -112,14 +117,15 @@ class BaseConnection(AbstractConnection):
         while not connect:
             try:
                 server = IMAP4_SSL(host=imap,
-                            port=port,
-                )
+                                   port=port,
+                                   )
                 connect = True
             except socket.gaierror:
                 logger.warning('No have connecting, try 3 seconds')
                 time.sleep(3)
         try:
             server.login(login, password)
+            cls.__online = True
             return server
         except IMAP4.error as error:
             message = error.args[0].decode()
@@ -168,7 +174,8 @@ class BaseConnection(AbstractConnection):
             login=self.__login,
             password=self.__password,
         )
-        box = self._select_box(box=self.mailbox)
+        self.__online = True
+        self._select_box(box=self.mailbox)
         self.messages = self._search_data(
             charset=self.charset,
             criteria=self.criteria,

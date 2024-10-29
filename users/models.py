@@ -7,7 +7,7 @@ class User(AbstractUser):
     """
     Модель пользователя
     """
-    image = models.ImageField(upload_to=f'users/',
+    image = models.ImageField(upload_to='users/',
                               blank=True,
                               null=True,
                               verbose_name='Изображение',
@@ -15,11 +15,11 @@ class User(AbstractUser):
                               )
 
     emails = models.ManyToManyField("mailscaner.Email",
-                                   verbose_name='эмеилы',
-                                   help_text='Эмеилы '
-                                   'принадлежащие пользователю',
-                                   related_name='users',
-                                   )
+                                    verbose_name='эмеилы',
+                                    help_text='Эмеилы '
+                                    'принадлежащие пользователю',
+                                    related_name='users',
+                                    )
 
     class Meta:
         db_table = 'user'

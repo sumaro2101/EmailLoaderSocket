@@ -38,14 +38,14 @@ class Email(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=('user_id', 'address'),
-                name='unique_user_address_constraint',
+                name='unique_user_address_constraint'
             )
         ]
 
     def __str__(self):
         return self.address
 
- 
+
 class File(models.Model):
     """
     Модель файла
@@ -54,13 +54,23 @@ class File(models.Model):
                             verbose_name='имя',
                             help_text='Имя сохраненного файла',
                             )
-    file = models.FileField(upload_to=f'images/',
+    file = models.FileField(upload_to='images/',
                             verbose_name='файл',
                             help_text='Файл из сообщения, если есть',
                             null=True,
                             blank=True,
                             max_length=300,
                             )
+
+    class Meta:
+        verbose_name = 'File'
+        verbose_name_plural = 'Files'
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("file_detail", kwargs={"pk": self.pk})
 
 
 class Message(models.Model):

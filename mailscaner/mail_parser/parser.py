@@ -45,7 +45,9 @@ class Parser:
         if parse_date_tz:
             stringify_date = ''.join(str(parse_date_tz[:6]))
             clear_time = stringify_date.strip("'(),")
-            datetime_type = datetime.strptime(clear_time, '%Y, %m, %d, %H, %M, %S')
+            datetime_type = datetime.strptime(
+                clear_time, '%Y, %m, %d, %H, %M, %S',
+                )
             logger.debug(f'_date_parse to end {datetime_type}')
             return datetime_type
         logger.debug(f'_date_parse to end {mess_date}')
@@ -68,9 +70,13 @@ class Parser:
                         logger.debug(f'enter to codec {codec}')
                         logger.debug(data)
                         try:
-                            deconed_subject = data.decode(encoding='utf-8')
+                            deconed_subject = data.decode(
+                                encoding='utf-8',
+                                )
                         except UnicodeDecodeError:
-                            deconed_subject = data.decode(encoding='iso-8859-8')
+                            deconed_subject = data.decode(
+                                encoding='iso-8859-8',
+                                )
                     else:
                         deconed_subject = data.decode(encoding=codec)
                         logger.debug(f'decoded {deconed_subject}')
@@ -98,8 +104,8 @@ class Parser:
             msg = email.message_from_bytes(msg[0][1])
             title = self._subject_parse(msg['Subject'])
             sender = self._return_path_parse(msg['Return-path'])
-            date_sending = self._date_parse(msg['Received'].split(';')[-1])
-            date_receipt = self._date_parse(msg['Date'])
+            date_sending = self._date_parse(msg['Date'])
+            date_receipt = self._date_parse(msg['Received'].split(';')[-1])
             text = self.TextParser(msg).parse()
             files = self.FileParser(msg).parse()
             logger.info(f'title is {title}')
@@ -129,21 +135,20 @@ class TextParser:
     @logger.catch(reraise=True)
     def _get_extract_part(self, part: Message):
         payload = part.get_payload()
-        if part["Content-Transfer-Encoding"] in (None, "7bit", "8bit", "binary"):
-            logger.debug(f'part is Content-Transfer-Encoding {part["Content-Transfer-Encoding"]}')
+        if (part["Content-Transfer-Encoding"] in
+           (None, "7bit", "8bit", "binary")):
             return payload
         elif part["Content-Transfer-Encoding"] == "base64":
-            logger.debug(f'part is Content-Transfer-Encoding {part["Content-Transfer-Encoding"]}')
             encoding = part.get_content_charset()
-            logger.debug(f'encoding is {encoding}')
             if not encoding or encoding == 'utf8':
                 encoding = 'utf-8'
-            payload = base64.b64decode(payload).decode(encoding=encoding, errors='ignore')
+            payload = (base64.b64decode(payload)
+                       .decode(encoding=encoding,
+                               errors='ignore',
+                               ))
             return payload
         elif part["Content-Transfer-Encoding"] == "quoted-printable":
-            logger.debug(f'part Content-Transfer-Encoding {part["Content-Transfer-Encoding"]}')
             encoding = part.get_content_charset()
-            logger.debug(f'encoding is {encoding}')
             if encoding == 'iso-8859-8-i':
                 encoding = 'iso-8859-8'
             payload = quopri.decodestring(payload).decode(encoding=encoding)
@@ -193,11 +198,9 @@ class TextParser:
         """
         message = self.message
         if not message.is_multipart():
-            logger.debug(f'message with out multipart')
             return self._parse_text(message)
         for part in message.walk():
             parse = self._parse_text(part)
-            logger.info(f'parse is in loop {bool(parse)}')
             if parse:
                 return parse
 
@@ -238,9 +241,7 @@ class FileParser:
                         decode_name = decode_name.decode(encoding='iso-8859-1')
                     nm += decode_name
                 logger.info(f'return composite name {nm}')
-            logger.debug(f'str_playload before {str_playload}')
             str_playload = str_playload.replace(value, nm)
-            logger.debug(f'str_playload after replace {value} to {nm} - {str_playload}')
             for c, i in enumerate(enode_name):
                 if c > 0:
                     str_playload = (str_playload.
@@ -256,12 +257,19 @@ class FileParser:
             logger.info(f'file class disposition {disposition}')
             logger.info(f'file class content_type {content_type}')
             if (content_type and
-                'name' in content_type and
-                disposition == 'attachment'):
+               'name' in content_type and
+               disposition == 'attachment'):
                 name = self._get_name_file(content_type)
                 logger.info(f'name file is {name}')
                 payload: bytes = base64.b64decode(part.get_payload())
-                file = File(file=io.BytesIO(payload), name=name)
+                file = File(file=io.BytesIO(payload),
+                            name=(name.strip()
+                                  .replace('"', '')
+                                  .replace('_', '-')
+                                  .replace(' ', '-')
+                                  .replace('--', '-')
+                                  .replace('/', '-')
+                                  .replace(':', '')))
                 logger.info(f'set file {file}')
                 self.attachments.append(file)
         return self.attachments

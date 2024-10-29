@@ -16,11 +16,11 @@ class AbstractConnection(ABC):
                  login: str,
                  password: str,
                  mailbox: Literal['INBOX',
-                                'FLAGS',
-                                'EXISTS',
-                                'RECENT',
-                                'UIDVALIDITY',
-                                ] = 'INBOX',
+                                  'FLAGS',
+                                  'EXISTS',
+                                  'RECENT',
+                                  'UIDVALIDITY',
+                                  ] = 'INBOX',
                  charset: str | None = None,
                  criteria: str = 'ALL'
                  ) -> None:

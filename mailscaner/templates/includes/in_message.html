@@ -1,0 +1,35 @@
+{% load static %}
+<div class="container">
+    <a href="{% url 'mailscaner:messages' message.email.pk %}">Back</a>
+    <h3 class="text-center mb-4">Message from {{ message.sender }}</h3>
+    <div class="card mt-2 p-2">
+        <div class="d-flex justify-content-around">
+            <div>
+                <strong>FROM: </strong>{{ message.sender }}
+            </div>
+            <div class="d-flex flex-column">
+                <strong>TIME_SENDING: </strong>{{ message.date_sending }}
+                <strong>TIME_RECEIPT: </strong>{{ message.date_receipt }}
+            </div>
+        </div>
+        <hr class="mt-1">
+        <div class="card-body">
+            <div>
+                <strong>TITLE: </strong>{{ message.title }}
+            </div>
+            <div>
+                <strong>TEXT: </strong>{{ message.text }}
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="d-flex flex-column">
+                <strong>FILES: </strong>
+                {% for file in message.files.all %}
+                <a href="http://localhost:8000/media/images/{{ file.name }}">{{ file.name }}</a>
+                {% empty %}
+                no files
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>

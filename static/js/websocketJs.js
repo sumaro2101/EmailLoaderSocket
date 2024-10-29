@@ -7,7 +7,6 @@ $(document).ready(function() {
         + pk
         + '/'
     );
-    console.log(socket.readyState);
     socket.onmessage = function(e) {
         const data = JSON.parse(e.data);
         if ('reverse_number' in data) {
@@ -39,6 +38,7 @@ $(document).ready(function() {
                 this.close()
             };
         };
+
         if ('list_uids' in data) {
             $('.progress-bar').css('width', '0%');
             $('.progress').attr('aria-valuenow', 0);
@@ -59,12 +59,12 @@ $(document).ready(function() {
         for (var i = 0; i <= length_uids - 1; i++) {
             socket.send(JSON.stringify({
                 'uid': list_uids[i],
-        }));
+            }));
     };
-};
+    };
 
-socket.onclose = function(e) {
-    this.close()
-    console.log('Socket closed unexpectedly');
-};
+    socket.onclose = function(e) {
+        this.close()
+        console.log('Socket closed unexpectedly');
+    };
 });

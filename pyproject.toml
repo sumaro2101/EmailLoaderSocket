@@ -17,6 +17,7 @@ channels = "4.0.0"
 channels-redis = "4.1.0"
 daphne = "4.0.0"
 bs4 = "^0.0.2"
+flake8 = "^7.1.1"
 
 
 [build-system]
