@@ -89,7 +89,7 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [('127.0.0.1', 6379)],
+            "hosts": ['redis://redis'],
         },
     },
 }
@@ -103,7 +103,6 @@ DATABASES = {
         'NAME': find_env('DB_NAME'),
         'USER': find_env('DB_USER'),
         'HOST': find_env('DB_HOST'),
-        'PORT': find_env('DB_PORT'),
         'PASSWORD': find_env('DB_PASSWORD'),
     }
 }

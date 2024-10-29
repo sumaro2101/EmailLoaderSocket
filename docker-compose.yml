@@ -1,0 +1,40 @@
+services:
+  mailscaner:
+    restart: always
+    build: 
+      context: .
+      dockerfile: ./docker/django/Dockerfile
+    volumes:
+      - .:/app
+      - ./static:/home/app/static/
+      - ./media:/home/app/media/
+    image: config
+    command: /start
+    ports:
+      - 8000:8000
+    env_file:
+      - .env
+    environment:
+      - DOCKER_DEBUG=0
+    depends_on:
+      - db
+      - redis
+  
+  db:
+    restart: always
+    image: postgres:16.3-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    hostname: db
+    env_file:
+      - .env
+
+  redis:
+    image: redis:7.2.5-alpine
+    expose:
+      - 6379
+
+volumes:
+  postgres_data:
+  static:
+  media:
