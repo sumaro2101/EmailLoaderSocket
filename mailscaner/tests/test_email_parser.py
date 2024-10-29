@@ -15,10 +15,8 @@ TEST_PASSWORD = settings.TEST_EMAIL_PASSWORD_GMAIL
 connect = GmailConnection(
             login=TEST_EMAIL,
             password=TEST_PASSWORD,
-            # limit=2,
+            limit=b'1',
             )
-
-parser = Parser(connection=connect)
 
 
 class TestEmailParser(TestCase):
@@ -27,8 +25,6 @@ class TestEmailParser(TestCase):
     """
     def setUp(self) -> None:
         self.messages = connect
-        self.parser = parser
-        self.message = parser.messages[0]
 
     def test_check_connection(self):
         connection = GmailConnection.connection(
@@ -37,17 +33,10 @@ class TestEmailParser(TestCase):
         )
         self.assertIsInstance(connection, IMAP4_SSL)
 
-    def test_limit(self):
-        self.assertEqual(len(self.messages), 1)
-
-    # def test_parse_date(self):
-    #     value = parser._date_parse(self.message['Date'])
-    #     self.assertEqual(value, 0)
-
     def test_parser(self):
-        generator = parser.load_messages()
-        value = None
-        for item in generator:
-            value = item
-        self.assertEqual(len(value), 7)
-        self.parser.server.logout()
+        parser = Parser(connection=connect.server,
+                        uid=connect[0],
+                        )
+        value = parser.parse()
+        self.assertEqual(len(value), 6)
+        connect.server.close()
